@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clueless - iOS Minimalist</title>
+<style>
+    /* 🎨 iOS 极简色彩规范 */
+    :root {
+        --ios-bg: #F2F2F7;          /* 经典 iOS 浅灰背景 */
+        --ios-card: #FFFFFF;        /* 纯白卡片 */
+        --ios-purple: #5E5CE6;      /* 高级苹果靛紫 (主色调) */
+        --ios-purple-light: #EBEBFA;/* 浅紫背景 */
+        --ios-text: #1C1C1E;        /* 苹果纯黑 */
+        --ios-gray: #8E8E93;        /* 副标题灰 */
+        --ios-light-gray: #E5E5EA;  /* 分割线灰 */
+        --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.04);
+        --shadow-medium: 0 12px 32px rgba(0, 0, 0, 0.08);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; 
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Helvetica Neue", sans-serif; 
+        -webkit-font-smoothing: antialiased;
+    }
+    
+    body { background-color: #d1d1d6; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+
+    /* 📱 手机壳模拟 (iPhone 比例) */
+    #app-container {
+        width: 375px;
+        height: 812px;
+        background-color: var(--ios-bg);
+        border-radius: 44px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        position: relative;
+        overflow: hidden;
+        border: 8px solid #111;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* 🔋 顶部状态栏模拟 */
+    .status-bar { height: 44px; width: 100%; position: absolute; top: 0; z-index: 100; pointer-events: none; }
+
+    /* 📄 页面基础类 */
+    .page { flex: 1; overflow-y: auto; display: none; padding-top: 44px; padding-bottom: 90px; }
+    .page.active { display: block; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar { display: none; }
+
+    /* 🔠 iOS 大标题 (Large Title) */
+    .large-title-header { padding: 10px 20px 10px; display: flex; justify-content: space-between; align-items: flex-end; }
+    .large-title { font-size: 32px; font-weight: 700; color: var(--ios-text); letter-spacing: -0.5px; }
+    .icon-btn { width: 32px; height: 32px; border-radius: 16px; background: var(--ios-light-gray); display: flex; justify-content: center; align-items: center; cursor: pointer; color: var(--ios-text); }
+
+    /* --- 1. 衣橱页 (Wardrobe) --- */
+    /* 分类 Segment Control */
+    .segment-scroll { display: flex; overflow-x: auto; padding: 0 20px 15px; gap: 10px; }
+    .segment-tab { padding: 8px 16px; font-size: 14px; font-weight: 500; color: var(--ios-gray); background: transparent; border-radius: 20px; white-space: nowrap; cursor: pointer; transition: 0.2s; }
+    .segment-tab.active { background: var(--ios-purple); color: #fff; box-shadow: 0 4px 10px rgba(94, 92, 230, 0.3); }
+
+    /* 瀑布流卡片 */
+    .grid-container { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 0 20px 20px; }
+    .ios-card { background: var(--ios-card); border-radius: 20px; padding: 12px; box-shadow: var(--shadow-soft); cursor: pointer; transition: transform 0.2s; }
+    .ios-card:active { transform: scale(0.96); }
+    .card-img-box { background: var(--ios-bg); border-radius: 14px; height: 140px; display: flex; justify-content: center; align-items: center; font-size: 50px; margin-bottom: 12px; position: relative; }
+    .card-title { font-size: 15px; font-weight: 600; color: var(--ios-text); margin-bottom: 4px; }
+    .card-subtitle { font-size: 13px; color: var(--ios-gray); }
+
+    /* 悬浮添加按钮 (FAB) */
+    .fab-btn { position: absolute; bottom: 100px; right: 20px; width: 56px; height: 56px; background: var(--ios-purple); border-radius: 28px; display: flex; justify-content: center; align-items: center; box-shadow: 0 8px 20px rgba(94, 92, 230, 0.4); z-index: 50; cursor: pointer; transition: 0.2s; }
+    .fab-btn:active { transform: scale(0.9); }
+
+    /* --- 2. 画布搭配间 (Canvas) --- */
+    .canvas-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #fff; background-image: radial-gradient(#E5E5EA 1px, transparent 1px); background-size: 20px 20px; z-index: -1; }
+    .canvas-header { padding: 54px 20px 10px; display: flex; justify-content: space-between; align-items: center; font-size: 17px; font-weight: 600; background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); }
+    .text-btn { color: var(--ios-purple); font-weight: 500; font-size: 16px; cursor: pointer; }
+    
+    .canvas-item-mock { position: absolute; filter: drop-shadow(0 10px 20px rgba(0,0,0,0.08)); font-size: 80px; }
+    
+    /* 底部抽屉 (Bottom Sheet) */
+    .bottom-sheet { position: absolute; bottom: 0; left: 0; right: 0; height: 260px; background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(20px); border-radius: 24px 24px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.05); border-top: 1px solid rgba(255,255,255,0.5); padding: 15px 0; z-index: 20; display: flex; flex-direction: column; }
+    .sheet-handle { width: 40px; height: 4px; background: var(--ios-light-gray); border-radius: 2px; margin: 0 auto 15px; }
+    .sheet-tabs { display: flex; justify-content: space-around; font-size: 14px; font-weight: 600; color: var(--ios-gray); margin-bottom: 20px; }
+    .sheet-tabs span.active { color: var(--ios-text); }
+    .sheet-items { display: flex; overflow-x: auto; padding: 0 20px; gap: 16px; }
+    .sheet-item { min-width: 72px; height: 72px; background: var(--ios-card); border-radius: 16px; box-shadow: var(--shadow-soft); display: flex; justify-content: center; align-items: center; font-size: 30px; }
+
+    /* --- 3. 日历与灵感 (Calendar) --- */
+    .cal-wrapper { background: var(--ios-card); margin: 0 20px 20px; border-radius: 24px; padding: 20px; box-shadow: var(--shadow-soft); }
+    .cal-header-row { display: flex; justify-content: space-between; font-weight: 600; margin-bottom: 15px; font-size: 18px; }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; gap: 8px 0; font-size: 14px; }
+    .cal-weekday { color: var(--ios-gray); font-size: 12px; font-weight: 500; margin-bottom: 8px; }
+    .cal-day { width: 32px; height: 32px; margin: 0 auto; display: flex; justify-content: center; align-items: center; border-radius: 50%; color: var(--ios-text); position: relative; font-weight: 500;}
+    .cal-day.has-event::after { content: ''; position: absolute; bottom: 2px; width: 4px; height: 4px; background: var(--ios-purple); border-radius: 50%; }
+    .cal-day.active { background: var(--ios-purple); color: #fff; box-shadow: 0 4px 10px rgba(94, 92, 230, 0.4); }
+    .cal-day.active.has-event::after { background: #fff; }
+
+    .insp-header { padding: 0 20px 10px; font-size: 20px; font-weight: 700; }
+
+    /* --- 4. 穿搭灵感机 (iOS Picker Style Shuffle) --- */
+    .blur-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(15px); z-index: 100; display: none; justify-content: center; align-items: flex-end; }
+    .blur-overlay.active { display: flex; animation: fadeIn 0.3s ease; }
+    .shuffle-card { width: 100%; background: var(--ios-card); border-radius: 32px 32px 0 0; padding: 30px 20px 50px; text-align: center; box-shadow: var(--shadow-medium); }
+    .shuffle-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; color: var(--ios-text); }
+    
+    /* 模拟滚筒 */
+    .picker-container { display: flex; justify-content: space-between; height: 160px; position: relative; margin-bottom: 30px; background: var(--ios-bg); border-radius: 20px; padding: 10px; }
+    /* 渐变遮罩制造 3D 效果 */
+    .picker-container::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, var(--ios-bg) 0%, rgba(242,242,247,0) 25%, rgba(242,242,247,0) 75%, var(--ios-bg) 100%); pointer-events: none; border-radius: 20px; }
+    /* 选中高亮框 */
+    .picker-highlight { position: absolute; top: 50%; left: 10px; right: 10px; height: 50px; background: rgba(0,0,0,0.05); transform: translateY(-50%); border-radius: 12px; pointer-events: none; }
+    
+    .picker-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 40px; overflow: hidden; position: relative; }
+    .picker-col div { height: 50px; display: flex; justify-content: center; align-items: center; opacity: 0.3; transition: all 0.2s; }
+    .picker-col div.active { opacity: 1; transform: scale(1.2); }
+
+    .ios-primary-btn { width: 100%; background: var(--ios-purple); color: #fff; font-size: 17px; font-weight: 600; padding: 16px; border-radius: 16px; border: none; cursor: pointer; transition: 0.2s; }
+    .ios-primary-btn:active { transform: scale(0.96); opacity: 0.9; }
+
+    /* --- 底部毛玻璃导航 (Tab Bar) --- */
+    .tab-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 84px; background: rgba(255, 255, 255, 0.75); backdrop-filter: blur(25px); border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 12px; z-index: 50; }
+    .tab-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--ios-gray); cursor: pointer; font-size: 10px; font-weight: 500; width: 60px; }
+    .tab-item.active { color: var(--ios-purple); }
+    /* SVG 图标设定 */
+    .tab-icon svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 1.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+    .tab-item.active .tab-icon svg { stroke-width: 2.2; }
+</style>
+</head>
+<body>
+
+<div id="app-container">
+    
+    <!-- 🔋 状态栏预留 -->
+    <div class="status-bar"></div>
+
+    <!-- === 1. 衣橱页 (Wardrobe) === -->
+    <div id="page-wardrobe" class="page active">
+        <div class="large-title-header">
+            <h1 class="large-title">我的衣橱</h1>
+            <div class="icon-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </div>
+        </div>
+
+        <div class="segment-scroll">
+            <div class="segment-tab active">全部单品</div>
+            <div class="segment-tab">上装</div>
+            <div class="segment-tab">下装</div>
+            <div class="segment-tab">连衣裙</div>
+            <div class="segment-tab">鞋履</div>
+            <div class="segment-tab">配饰</div>
+        </div>
+
+        <div class="grid-container">
+            <!-- 卡片 1 -->
+            <div class="ios-card">
+                <div class="card-img-box">
+                    <span style="font-size: 55px; opacity: 0.9;">👚</span>
+                </div>
+                <div class="card-title">基础白衬衫</div>
+                <div class="card-subtitle">上装 · 春夏</div>
+            </div>
+            <!-- 卡片 2 -->
+            <div class="ios-card">
+                <div class="card-img-box">
+                    <span style="font-size: 55px; opacity: 0.9;">👖</span>
+                </div>
+                <div class="card-title">直筒牛仔裤</div>
+                <div class="card-subtitle">下装 · 四季</div>
+            </div>
+            <!-- 卡片 3 -->
+            <div class="ios-card">
+                <div class="card-img-box">
+                    <span style="font-size: 55px; opacity: 0.9;">👗</span>
+                </div>
+                <div class="card-title">法式碎花裙</div>
+                <div class="card-subtitle">连衣裙 · 约会</div>
+            </div>
+            <!-- 卡片 4 -->
+            <div class="ios-card">
+                <div class="card-img-box">
+                    <span style="font-size: 55px; opacity: 0.9;">👠</span>
+                </div>
+                <div class="card-title">红色高跟鞋</div>
+                <div class="card-subtitle">鞋履 · 职场</div>
+            </div>
+        </div>
+
+        <!-- 悬浮上传按钮 -->
+        <div class="fab-btn" onclick="alert('iOS 原生动作面板：\n[拍照] \n[从相册选择] \n自动执行 AI 精准抠图')">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        </div>
+    </div>
+
+    <!-- === 2. 画布搭配间 (Canvas) === -->
+    <div id="page-canvas" class="page" style="padding-top:0;">
+        <div class="canvas-bg"></div>
+        <div class="canvas-header">
+            <span class="text-btn" style="color: var(--ios-text); font-weight: 400;">取消</span>
+            <span>搭配画布</span>
+            <span class="text-btn">保存</span>
+        </div>
+        
+        <!-- 模拟画布元素 -->
+        <div class="canvas-item-mock" style="top: 25%; left: 30%;">👚</div>
+        <div class="canvas-item-mock" style="top: 45%; left: 32%;">👖</div>
+
+        <!-- 底部玻璃质感抽屉 -->
+        <div class="bottom-sheet">
+            <div class="sheet-handle"></div>
+            <div class="sheet-tabs">
+                <span class="active">单品库</span>
+                <span>背景模板</span>
+                <span>调整图层</span>
+            </div>
+            <div class="sheet-items">
+                <div class="sheet-item">🧥</div>
+                <div class="sheet-item">🎽</div>
+                <div class="sheet-item">👔</div>
+                <div class="sheet-item">👗</div>
+                <div class="sheet-item">🩳</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 3. 日历与灵感 (Calendar) === -->
+    <div id="page-calendar" class="page">
+        <div class="large-title-header" style="margin-bottom: 10px;">
+            <h1 class="large-title">穿搭日历</h1>
+            <!-- 触发随机转盘的按钮 -->
+            <div class="icon-btn" style="width: auto; padding: 0 12px; background: var(--ios-purple-light); color: var(--ios-purple); font-weight: 600; font-size: 14px;" onclick="openShuffle()">
+                ✨ 灵感机
+            </div>
+        </div>
+
+        <!-- iOS 风格日历 -->
+        <div class="cal-wrapper">
+            <div class="cal-header-row">
+                <span>二月 2026</span>
+                <span style="color: var(--ios-purple); font-size: 16px;">今天</span>
+            </div>
+            <div class="cal-grid">
+                <div class="cal-weekday">日</div><div class="cal-weekday">一</div><div class="cal-weekday">二</div><div class="cal-weekday">三</div><div class="cal-weekday">四</div><div class="cal-weekday">五</div><div class="cal-weekday">六</div>
+                <!-- JS 渲染日历 -->
+            </div>
+        </div>
+
+        <h2 class="insp-header">本周精选</h2>
+        <div class="grid-container" style="padding-top: 5px;">
+            <div class="ios-card" style="padding: 0; overflow: hidden;">
+                <div style="height: 160px; background: #EFEFF4; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 40px;">👚<br>👖</div>
+                <div style="padding: 12px;">
+                    <div class="card-title">极简通勤</div>
+                </div>
+            </div>
+            <div class="ios-card" style="padding: 0; overflow: hidden;">
+                <div style="height: 160px; background: #FDE8E8; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 40px;">👗<br>👠</div>
+                <div style="padding: 12px;">
+                    <div class="card-title">周末晚宴</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 4. iOS 风格灵感机 (Shuffle Picker Modal) === -->
+    <div id="shuffle-modal" class="blur-overlay">
+        <div class="shuffle-card">
+            <div style="width: 40px; height: 4px; background: var(--ios-light-gray); border-radius: 2px; margin: 0 auto 20px;"></div>
+            <h3 class="shuffle-title">OOTD 灵感机</h3>
+            
+            <div class="picker-container">
+                <div class="picker-highlight"></div>
+                <!-- 上装列 -->
+                <div class="picker-col" id="col-top">
+                    <div>🧥</div><div class="active">👚</div><div>👔</div>
+                </div>
+                <!-- 下装列 -->
+                <div class="picker-col" id="col-bottom">
+                    <div>🩳</div><div class="active">👖</div><div>👗</div>
+                </div>
+                <!-- 鞋履列 -->
+                <div class="picker-col" id="col-shoes">
+                    <div>🥾</div><div class="active">👠</div><div>👟</div>
+                </div>
+            </div>
+            
+            <button class="ios-primary-btn" id="shuffle-btn" onclick="startShuffle()">
+                随机生成穿搭
+            </button>
+        </div>
+    </div>
+
+    <!-- === 底部 Tab Bar (SVG 图标) === -->
+    <div class="tab-bar">
+        <!-- 衣橱 -->
+        <div class="tab-item active" onclick="switchTab('wardrobe', this)">
+            <div class="tab-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
+            </div>
+            <span>衣橱</span>
+        </div>
+        <!-- 画布 -->
+        <div class="tab-item" onclick="switchTab('canvas', this)">
+            <div class="tab-icon">
+                <svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+            </div>
+            <span>画布</span>
+        </div>
+        <!-- 日历 -->
+        <div class="tab-item" onclick="switchTab('calendar', this)">
+            <div class="tab-icon">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            </div>
+            <span>日历</span>
+        </div>
+        <!-- 我的 -->
+        <div class="tab-item" onclick="alert('进入 iOS 风格设置与个人主页')">
+            <div class="tab-icon">
+                <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            </div>
+            <span>我的</span>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 1. Tab 切换逻辑 (iOS 风格无缝切换)
+    function switchTab(pageId, element) {
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
+        document.getElementById('page-' + pageId).classList.add('active');
+        element.classList.add('active');
+    }
+
+    // 2. 渲染 iOS 风格日历
+    const calGrid = document.querySelector('.cal-grid');
+    const events = { 3: true, 12: true, 18: true, 26: true }; // 模拟记录了穿搭的日子
+    const today = 26;
+    
+    // 填充空白
+    for(let i=0; i<1; i++) calGrid.innerHTML += `<div></div>`; 
+    
+    // 填充日期
+    for(let i=1; i<=28; i++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'cal-day';
+        dayDiv.innerText = i;
+        if (i === today) dayDiv.classList.add('active');
+        if (events[i]) dayDiv.classList.add('has-event');
+        calGrid.appendChild(dayDiv);
+    }
+
+    // 3. iOS 风格 灵感机 (UIPickerView 模拟)
+    const modal = document.getElementById('shuffle-modal');
+    function openShuffle() {
+        modal.classList.add('active');
+    }
+    
+    // 点击半透明背景关闭弹窗
+    modal.addEventListener('click', function(e) {
+        if(e.target === modal) modal.classList.remove('active');
+    });
+
+    const tops =['🧥', '👚', '👔', '🎽', '👕'];
+    const bottoms =['🩳', '👖', '👗', '🩲'];
+    const shoes =['🥾', '👠', '👟', '🥿'];
+
+    function startShuffle() {
+        const btn = document.getElementById('shuffle-btn');
+        btn.innerText = "匹配中...";
+        btn.style.opacity = "0.7";
+
+        let count = 0;
+        // 模拟 Apple 系统滚轮的平滑跳动视觉
+        const interval = setInterval(() => {
+            document.getElementById('col-top').innerHTML = `<div>${tops[Math.floor(Math.random()*tops.length)]}</div><div class="active">${tops[Math.floor(Math.random()*tops.length)]}</div><div>${tops[Math.floor(Math.random()*tops.length)]}</div>`;
+            document.getElementById('col-bottom').innerHTML = `<div>${bottoms[Math.floor(Math.random()*bottoms.length)]}</div><div class="active">${bottoms[Math.floor(Math.random()*bottoms.length)]}</div><div>${bottoms[Math.floor(Math.random()*bottoms.length)]}</div>`;
+            document.getElementById('col-shoes').innerHTML = `<div>${shoes[Math.floor(Math.random()*shoes.length)]}</div><div class="active">${shoes[Math.floor(Math.random()*shoes.length)]}</div><div>${shoes[Math.floor(Math.random()*shoes.length)]}</div>`;
+            count++;
+            if(count > 15) {
+                clearInterval(interval);
+                btn.innerText = "生成完成！(点击保存)";
+                btn.style.opacity = "1";
+                // 模拟 iOS Haptic Touch 震动
+                if(navigator.vibrate) navigator.vibrate(50);
+                setTimeout(() => { btn.innerText = "再次随机生成"; }, 2000);
+            }
+        }, 80);
+    }
+</script>
+
+</body>
+</html>

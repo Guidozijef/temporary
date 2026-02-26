@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clueless - 数字衣橱原型</title>
+<style>
+    /* 🎨 全局与色彩规范 */
+    :root {
+        --primary: #8A2BE2;       /* 电光紫 / 霓虹紫 */
+        --bg: #F7F3FA;            /* 极浅香芋紫 */
+        --accent: #FF69B4;        /* 芭比粉 */
+        --white: #FFFFFF;
+        --text-dark: #333333;
+        --text-light: #888888;
+        --shadow: 0 8px 24px rgba(138, 43, 226, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+    
+    body { background-color: #e0e0e0; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+
+    /* 📱 手机壳模拟容器 */
+    #app-container {
+        width: 375px;
+        height: 812px; /* iPhone X 比例 */
+        background-color: var(--bg);
+        border-radius: 40px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        position: relative;
+        overflow: hidden;
+        border: 8px solid #333;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* --- 导航与公共组件 --- */
+    .top-bar { height: 44px; display: flex; justify-content: space-between; align-items: center; padding: 0 20px; font-weight: bold; font-size: 18px; background: var(--white); z-index: 10; }
+    .page { flex: 1; overflow-y: auto; display: none; position: relative; padding-bottom: 80px; }
+    .page.active { display: block; }
+    
+    /* 隐藏滚动条 */
+    ::-webkit-scrollbar { display: none; }
+
+    /* --- 1. 衣橱页 (Wardrobe) --- */
+    .categories { display: flex; overflow-x: auto; padding: 15px; gap: 10px; background: var(--white); border-bottom: 1px solid #eee; }
+    .pill { padding: 6px 16px; border-radius: 20px; font-size: 14px; white-space: nowrap; border: 1px solid var(--primary); color: var(--primary); background: var(--white); cursor: pointer;}
+    .pill.active { background: var(--primary); color: var(--white); font-weight: bold;}
+    
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 15px; }
+    .card { background: var(--white); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; align-items: center; box-shadow: var(--shadow); position: relative;}
+    .card .img-placeholder { font-size: 50px; margin-bottom: 10px; filter: drop-shadow(0px 8px 10px rgba(0,0,0,0.1)); }
+    .card .tags { display: flex; gap: 5px; font-size: 10px; margin-top: 5px; }
+    .tag { background: var(--bg); padding: 2px 6px; border-radius: 6px; color: var(--primary); }
+
+    .fab { position: absolute; bottom: 90px; right: 20px; width: 64px; height: 64px; background: var(--primary); color: white; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 28px; box-shadow: 0 10px 20px rgba(138, 43, 226, 0.4); cursor: pointer; z-index: 20;}
+
+    /* --- 2. 画布搭配间 (Canvas) --- */
+    .canvas-board { height: 60%; background: linear-gradient(135deg, #e6d7f9 0%, var(--bg) 100%); position: relative; border-bottom: 2px solid #ddd; }
+    .canvas-board::before { content: ""; position: absolute; inset: 0; background-image: linear-gradient(#d5c2ee 1px, transparent 1px), linear-gradient(90deg, #d5c2ee 1px, transparent 1px); background-size: 20px 20px; opacity: 0.5; }
+    .canvas-item { position: absolute; font-size: 80px; filter: drop-shadow(5px 15px 10px rgba(0,0,0,0.2)); }
+    .item-top { top: 20%; left: 30%; z-index: 2; }
+    .item-bottom { top: 45%; left: 35%; z-index: 1; }
+    .item-shoes { top: 70%; left: 45%; z-index: 3; font-size: 60px; }
+    
+    .canvas-tools { height: 40%; background: var(--white); display: flex; flex-direction: column; }
+    .tool-tabs { display: flex; justify-content: space-around; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; font-weight: bold; }
+    .tool-tabs span { color: var(--text-light); }
+    .tool-tabs span.active { color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 5px; }
+    .drawer-items { display: flex; overflow-x: auto; padding: 20px 15px; gap: 15px; align-items: center; }
+    .drawer-item { width: 70px; height: 70px; background: var(--bg); border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 35px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.05); }
+
+    /* --- 3. 日历与场景 (Calendar) --- */
+    .cal-header { display: flex; justify-content: space-between; padding: 15px; font-weight: bold; background: var(--white); }
+    .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; background: #eee; border-bottom: 1px solid #eee; }
+    .cal-day { background: var(--white); aspect-ratio: 1; display: flex; flex-direction: column; align-items: center; padding-top: 5px; font-size: 12px; position: relative; }
+    .cal-day.has-ootd { font-weight: bold; color: var(--primary); }
+    .ootd-thumb { font-size: 18px; margin-top: 2px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1)); }
+    
+    .inspiration { padding: 15px; }
+    .insp-title { font-weight: bold; margin-bottom: 10px; font-size: 16px; }
+
+    /* --- 4. 老虎机弹窗 (Slot Machine) --- */
+    .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; display: none; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+    .modal-overlay.active { display: flex; }
+    .slot-machine { width: 90%; background: var(--white); border-radius: 24px; padding: 25px 20px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 4px solid var(--primary); }
+    .slot-title { font-size: 18px; font-weight: bold; color: var(--primary); margin-bottom: 20px; font-family: "Courier New", Courier, monospace; }
+    .slot-row { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
+    .slot-arrows { color: var(--primary); font-weight: bold; font-size: 20px; }
+    .slot-box { width: 100px; height: 100px; background: var(--bg); border: 2px solid #ddd; border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 55px; box-shadow: inset 0 5px 10px rgba(0,0,0,0.05); overflow: hidden; position: relative; }
+    
+    .push-btn { margin-top: 20px; background: var(--primary); color: white; border: none; padding: 15px 40px; font-size: 24px; font-weight: bold; border-radius: 50px; cursor: pointer; box-shadow: 0 8px 0 #5b1b96, 0 15px 20px rgba(138,43,226,0.4); text-transform: uppercase; transition: all 0.1s; }
+    .push-btn:active { transform: translateY(8px); box-shadow: 0 0 0 #5b1b96, 0 5px 10px rgba(138,43,226,0.4); }
+
+    /* --- 底部导航栏 --- */
+    .bottom-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 70px; background: var(--white); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #eee; padding-bottom: 15px; z-index: 50; }
+    .tab-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--text-light); font-size: 11px; cursor: pointer; }
+    .tab-item.active { color: var(--primary); }
+    .tab-icon { font-size: 22px; }
+    .tab-item.active .tab-icon { transform: scale(1.1); filter: drop-shadow(0 2px 4px rgba(138,43,226,0.3)); }
+    .tab-main .tab-icon { background: var(--primary); width: 45px; height: 45px; border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; margin-top: -15px; box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4); font-size: 20px; }
+</style>
+</head>
+<body>
+
+<div id="app-container">
+    
+    <!-- === 1. 衣橱页 (Wardrobe) === -->
+    <div id="page-wardrobe" class="page active">
+        <div class="top-bar">
+            <span>我的数字衣橱</span>
+            <span>🔍 ⚙️</span>
+        </div>
+        <div class="categories">
+            <div class="pill active">全部</div>
+            <div class="pill">上装</div>
+            <div class="pill">下装</div>
+            <div class="pill">连体/裙装</div>
+            <div class="pill">鞋履</div>
+            <div class="pill">包配</div>
+        </div>
+        <div class="grid">
+            <div class="card">
+                <div class="img-placeholder">👚</div>
+                <div style="font-weight: bold; font-size: 14px;">白衬衫</div>
+                <div class="tags"><span class="tag">🌸 春夏</span><span class="tag">💼 职场</span></div>
+            </div>
+            <div class="card">
+                <div class="img-placeholder">👖</div>
+                <div style="font-weight: bold; font-size: 14px;">水洗牛仔裤</div>
+                <div class="tags"><span class="tag">🍂 秋冬</span><span class="tag">☕ 日常</span></div>
+            </div>
+            <div class="card">
+                <div class="img-placeholder">👗</div>
+                <div style="font-weight: bold; font-size: 14px;">碎花连裙</div>
+                <div class="tags"><span class="tag">🌸 春夏</span><span class="tag">🥂 约会</span></div>
+            </div>
+            <div class="card">
+                <div class="img-placeholder">🥿</div>
+                <div style="font-weight: bold; font-size: 14px;">玛丽珍鞋</div>
+                <div class="tags"><span class="tag">🎨 复古</span><span class="tag">👠 百搭</span></div>
+            </div>
+        </div>
+        <!-- 悬浮上传按钮 -->
+        <div class="fab" onclick="alert('📸 底部滑出：拍照/相册选图\n✨ AI 自动抠去背景')">➕</div>
+    </div>
+
+    <!-- === 2. 画布搭配间 (Canvas) === -->
+    <div id="page-canvas" class="page">
+        <div class="top-bar">
+            <span>< 画布间</span>
+            <span style="font-size: 14px; color: var(--primary);">💾 保存</span>
+        </div>
+        <div class="canvas-board">
+            <div class="canvas-item item-top">👚</div>
+            <div class="canvas-item item-bottom">👖</div>
+            <div class="canvas-item item-shoes">👟</div>
+        </div>
+        <div class="canvas-tools">
+            <div class="tool-tabs">
+                <span class="active">👗 单品库</span>
+                <span>🖼️ 杂志背景</span>
+                <span>✨ 滤镜/阴影</span>
+            </div>
+            <div style="padding: 10px 15px 0; font-size: 12px; color: #888;">向上拖拽单品放入画布 ⬆️</div>
+            <div class="drawer-items">
+                <div class="drawer-item">🧥</div>
+                <div class="drawer-item">🎽</div>
+                <div class="drawer-item">👔</div>
+                <div class="drawer-item">👗</div>
+                <div class="drawer-item">🩳</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 3. 日历与场景 (Calendar) === -->
+    <div id="page-calendar" class="page">
+        <div class="cal-header">
+            <span>< 2026年 2月 ></span>
+            <span style="color: var(--primary); cursor: pointer;" onclick="openSlotMachine()">🎰 今天穿什么？</span>
+        </div>
+        <div class="cal-grid" style="font-size: 10px; text-align: center; background: white; padding: 5px 0;">
+            <div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>
+        </div>
+        <div class="cal-grid" id="calendar-days">
+            <!-- JS 渲染日历格子 -->
+        </div>
+        
+        <div class="inspiration">
+            <div class="insp-title">✨ 穿搭灵感库</div>
+            <div class="grid" style="padding: 0;">
+                <div class="card" style="background: linear-gradient(135deg, #e6d7f9, #fff);">
+                    <div style="font-size: 40px;">👚<br>👖</div>
+                    <div style="font-size: 12px; margin-top: 10px;">2/26 职场通勤</div>
+                </div>
+                <div class="card" style="background: linear-gradient(135deg, #ffe4e1, #fff);">
+                    <div style="font-size: 40px;">👗<br>👠</div>
+                    <div style="font-size: 12px; margin-top: 10px;">2/24 约会晚宴</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- === 4. 老虎机转盘弹窗 (Modal) === -->
+    <div id="slot-modal" class="modal-overlay">
+        <div class="slot-machine">
+            <div style="display: flex; justify-content: flex-end; font-size: 20px; cursor: pointer;" onclick="closeSlotMachine()">✖</div>
+            <div class="slot-title">✨ 专属搭配盲盒 ✨</div>
+            
+            <div class="slot-row">
+                <span class="slot-arrows">>></span>
+                <div class="slot-box" id="slot-top">👚</div>
+                <span class="slot-arrows"><<</span>
+            </div>
+            <div class="slot-row">
+                <span class="slot-arrows">>></span>
+                <div class="slot-box" id="slot-bottom">👖</div>
+                <span class="slot-arrows"><<</span>
+            </div>
+            <div class="slot-row">
+                <span class="slot-arrows">>></span>
+                <div class="slot-box" id="slot-shoes">🥿</div>
+                <span class="slot-arrows"><<</span>
+            </div>
+            
+            <button class="push-btn" onclick="spinSlot()">PUSH</button>
+            <div style="margin-top: 20px; font-size: 14px; color: #888;">摇一摇手机随机匹配</div>
+        </div>
+    </div>
+
+    <!-- === 底部导航栏 === -->
+    <div class="bottom-bar">
+        <div class="tab-item active" onclick="switchTab('wardrobe', this)">
+            <div class="tab-icon">👚</div>
+            <div>衣橱</div>
+        </div>
+        <div class="tab-item tab-main" onclick="switchTab('canvas', this)">
+            <div class="tab-icon">✨</div>
+            <div style="color: var(--primary); font-weight: bold;">画布</div>
+        </div>
+        <div class="tab-item" onclick="switchTab('calendar', this)">
+            <div class="tab-icon">📅</div>
+            <div>日历</div>
+        </div>
+        <div class="tab-item" onclick="alert('进入个人主页与分享设置')">
+            <div class="tab-icon">👤</div>
+            <div>我的</div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // 1. Tab 切换逻辑
+    function switchTab(pageId, element) {
+        // 隐藏所有页面
+        document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+        // 移除所有 Tab 的 active 状态
+        document.querySelectorAll('.tab-item').forEach(tab => tab.classList.remove('active'));
+        
+        // 显示目标页面
+        document.getElementById('page-' + pageId).classList.add('active');
+        // 高亮当前 Tab
+        element.classList.add('active');
+    }
+
+    // 2. 渲染简单的日历 Demo
+    const calGrid = document.getElementById('calendar-days');
+    const ootds = { 4: '👚', 12: '👗', 18: '🧥', 24: '🎽', 26: '👚' }; // 模拟有穿搭的日期
+    for(let i=1; i<=28; i++) {
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'cal-day';
+        dayDiv.innerHTML = `<span>${i}</span>`;
+        if (ootds[i]) {
+            dayDiv.classList.add('has-ootd');
+            dayDiv.innerHTML += `<div class="ootd-thumb">${ootds[i]}</div>`;
+        }
+        calGrid.appendChild(dayDiv);
+    }
+
+    // 3. 老虎机弹窗逻辑
+    function openSlotMachine() {
+        document.getElementById('slot-modal').classList.add('active');
+    }
+
+    function closeSlotMachine() {
+        document.getElementById('slot-modal').classList.remove('active');
+    }
+
+    // 老虎机滚动特效 (简易模拟版)
+    const tops = ['👚', '🧥', '🎽', '👔'];
+    const bottoms = ['👖', '🩳', '👗'];
+    const shoes = ['👟', '🥿', '👠', '🥾'];
+
+    function spinSlot() {
+        const btn = document.querySelector('.push-btn');
+        btn.innerText = "SPINNING...";
+        btn.style.opacity = "0.8";
+
+        let times = 0;
+        // 模拟滚动动画
+        const interval = setInterval(() => {
+            document.getElementById('slot-top').innerText = tops[Math.floor(Math.random() * tops.length)];
+            document.getElementById('slot-bottom').innerText = bottoms[Math.floor(Math.random() * bottoms.length)];
+            document.getElementById('slot-shoes').innerText = shoes[Math.floor(Math.random() * shoes.length)];
+            times++;
+            if(times > 15) {
+                clearInterval(interval);
+                btn.innerText = "PUSH";
+                btn.style.opacity = "1";
+                // 如果需要震动可以在小程序里接入 wx.vibrateShort()
+            }
+        }, 100);
+    }
+</script>
+
+</body>
+</html>
