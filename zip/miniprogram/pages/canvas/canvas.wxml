@@ -1,0 +1,59 @@
+<view class="container">
+  <view class="nav-header glass">
+    <view class="nav-btn">取消</view>
+    <view class="nav-title">搭配画布</view>
+    <view class="nav-btn primary">保存</view>
+  </view>
+
+  <view class="canvas-area">
+    <view class="watermark">VOGUE</view>
+    <view class="canvas-item" style="top: 20%; left: 25%;">
+      <text class="emoji-huge">🧥</text>
+      <view class="rotate-btn">
+        <image class="rotate-icon" src="https://img.icons8.com/ios-glyphs/30/ffffff/refresh.png"></image>
+      </view>
+    </view>
+    <view class="canvas-item no-border" style="top: 40%; left: 30%;">
+      <text class="emoji-huge">👖</text>
+    </view>
+  </view>
+
+  <view class="bottom-drawer">
+    <view class="drawer-handle"></view>
+    <view class="drawer-tabs">
+      <view class="drawer-tab active">👗 单品库</view>
+      <view class="drawer-tab">🖼️ 杂志模板</view>
+      <view class="drawer-tab">✨ 滤镜/去色</view>
+    </view>
+    <scroll-view class="item-scroll" scroll-x="true">
+      <view class="scroll-item"><text>🎽</text></view>
+      <view class="scroll-item"><text>👔</text></view>
+      <view class="scroll-item"><text>👗</text></view>
+      <view class="scroll-item"><text>🩳</text></view>
+      <view class="scroll-item"><text>👟</text></view>
+    </scroll-view>
+    <view class="drag-hint">
+      <text class="arrow-up">↑</text> 向上拖拽单品放入画布
+    </view>
+  </view>
+
+  <!-- Custom Tab Bar -->
+  <view class="tab-bar glass">
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/wardrobe/wardrobe">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/shirt.png"></image>
+      <text class="tab-text">衣橱</text>
+    </view>
+    <view class="tab-item active">
+      <image class="tab-icon" src="https://img.icons8.com/ios-filled/50/8A2BE2/magic-wand.png"></image>
+      <text class="tab-text">画布</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/calendar/calendar">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/calendar.png"></image>
+      <text class="tab-text">日历</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/discover/discover">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/compass.png"></image>
+      <text class="tab-text">发现</text>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,72 @@
+<view class="container">
+  <view class="nav-header">
+    <view class="nav-btn" bindtap="goBack">
+      <text class="back-icon">‹</text> 取消
+    </view>
+    <view class="nav-title">编辑单品</view>
+    <view class="nav-btn primary">保存</view>
+  </view>
+
+  <view class="content">
+    <!-- AI Cutout Result -->
+    <view class="cutout-box">
+      <text class="emoji-large">🧥</text>
+      <view class="success-tag">
+        <image class="tag-icon" src="https://img.icons8.com/ios-glyphs/30/8A2BE2/magic-wand.png"></image>
+        <text>AI 抠图成功</text>
+      </view>
+    </view>
+    <view class="reupload-btn">
+      <image class="reupload-icon" src="https://img.icons8.com/ios-glyphs/30/007AFF/refresh.png"></image>
+      <text>重新上传</text>
+    </view>
+
+    <!-- Form -->
+    <view class="form-group">
+      <view class="form-row">
+        <text class="label">分类</text>
+        <view class="value-group">
+          <text class="value">外套 / 风衣</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+
+      <view class="form-card">
+        <view class="card-header">
+          <text class="label">主色调</text>
+          <text class="sub-label">(已自动提取)</text>
+        </view>
+        <view class="color-list">
+          <view class="color-item" style="background-color: #D4C4B7; border: 2px solid #8A2BE2;"></view>
+          <view class="color-item" style="background-color: #FFFFFF; border: 1px solid #EEEEEE;"></view>
+          <view class="color-item" style="background-color: #1A1A1A; border: 1px solid #EEEEEE;"></view>
+          <view class="color-item add-color">
+            <text>+</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="form-card">
+        <view class="card-header">
+          <text class="label">适合季节</text>
+        </view>
+        <view class="tag-list">
+          <view class="tag-btn">🌸 春季</view>
+          <view class="tag-btn active">🍂 秋季</view>
+          <view class="tag-btn">❄️ 冬季</view>
+        </view>
+      </view>
+
+      <view class="form-card">
+        <view class="card-header">
+          <text class="label">穿着场合 (多选)</text>
+        </view>
+        <view class="tag-list">
+          <view class="tag-btn active">💼 职场通勤</view>
+          <view class="tag-btn">🥂 约会晚宴</view>
+          <view class="tag-btn active">✈️ 旅行度假</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

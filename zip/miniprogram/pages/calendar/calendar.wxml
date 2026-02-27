@@ -1,0 +1,118 @@
+<view class="container">
+  <view class="header">
+    <text class="title">OOTD 穿搭日历</text>
+  </view>
+
+  <!-- Calendar Component -->
+  <view class="calendar-card">
+    <view class="calendar-header">
+      <text class="month-title">2026年 2月</text>
+      <view class="nav-arrows">
+        <text class="arrow">‹</text>
+        <text class="arrow">›</text>
+      </view>
+    </view>
+    
+    <view class="week-days">
+      <text>日</text>
+      <text>一</text>
+      <text>二</text>
+      <text>三</text>
+      <text>四</text>
+      <text>五</text>
+      <text>六</text>
+    </view>
+    
+    <view class="days-grid">
+      <text class="day prev-month">25</text>
+      <text class="day prev-month">26</text>
+      <text class="day prev-month">27</text>
+      <text class="day prev-month">28</text>
+      <text class="day prev-month">29</text>
+      <text class="day prev-month">30</text>
+      <text class="day prev-month">31</text>
+      <text class="day">1</text>
+      <view class="day has-dot"><text>2</text><view class="dot"></view></view>
+      <text class="day">3</text>
+      <text class="day">4</text>
+      <view class="day has-dot"><text>5</text><view class="dot"></view></view>
+      <text class="day">6</text>
+      <text class="day">7</text>
+      <text class="day">8</text>
+      <text class="day">9</text>
+      <text class="day">10</text>
+      <text class="day">11</text>
+      <text class="day">12</text>
+      <text class="day">13</text>
+      <text class="day">14</text>
+      <text class="day">15</text>
+      <text class="day">16</text>
+      <text class="day">17</text>
+      <text class="day">18</text>
+      <text class="day">19</text>
+      <text class="day">20</text>
+      <text class="day">21</text>
+      <text class="day">22</text>
+      <text class="day">23</text>
+      <text class="day">24</text>
+      <text class="day">25</text>
+      <view class="day active"><view class="active-bg">26</view></view>
+      <text class="day">27</text>
+      <text class="day">28</text>
+    </view>
+
+    <view class="today-record">
+      <view class="record-left">
+        <view class="record-icon">🧥</view>
+        <view class="record-info">
+          <view class="record-title">今日穿搭记录</view>
+          <view class="record-desc">包含 3 件单品</view>
+        </view>
+      </view>
+      <text class="arrow-right">›</text>
+    </view>
+  </view>
+
+  <!-- Scene Capsules -->
+  <view class="section-header">
+    <text class="section-title">场景胶囊</text>
+    <text class="section-btn">新建</text>
+  </view>
+
+  <scroll-view class="capsules-scroll" scroll-x="true">
+    <view class="capsule-card">
+      <view class="capsule-img-wrapper">
+        <image class="capsule-img" src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=200&h=200&fit=crop" mode="aspectFill"></image>
+      </view>
+      <view class="capsule-title">五一去大理</view>
+      <view class="capsule-desc">12件单品</view>
+    </view>
+    <view class="capsule-card">
+      <view class="capsule-img-wrapper bg-gray">
+        <image class="capsule-img" src="https://images.unsplash.com/photo-1497215728101-856f4ea42174?w=200&h=200&fit=crop" mode="aspectFill"></image>
+      </view>
+      <view class="capsule-title">下周打工装</view>
+      <view class="capsule-desc">5套装扮</view>
+    </view>
+  </scroll-view>
+
+  <!-- Custom Tab Bar -->
+  <view class="tab-bar glass">
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/wardrobe/wardrobe">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/shirt.png"></image>
+      <text class="tab-text">衣橱</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/canvas/canvas">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/magic-wand.png"></image>
+      <text class="tab-text">画布</text>
+    </view>
+    <view class="tab-item active">
+      <image class="tab-icon" src="https://img.icons8.com/ios-filled/50/8A2BE2/calendar.png"></image>
+      <text class="tab-text">日历</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/discover/discover">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/compass.png"></image>
+      <text class="tab-text">发现</text>
+    </view>
+  </view>
+</view>

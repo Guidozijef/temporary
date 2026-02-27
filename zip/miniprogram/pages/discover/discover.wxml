@@ -1,0 +1,97 @@
+<view class="container">
+  <view class="header">
+    <text class="title">灵感机</text>
+  </view>
+
+  <view class="segmented-control">
+    <view class="segment active">随机转盘</view>
+    <view class="segment">好友投票</view>
+  </view>
+
+  <!-- Slot Machine -->
+  <view class="slot-machine">
+    <view class="slot-handle"></view>
+    <view class="slot-title">今天穿什么？</view>
+    <view class="slot-subtitle">点击生成，解决你的选择困难症</view>
+
+    <view class="picker-view">
+      <view class="picker-overlay-top"></view>
+      <view class="picker-overlay-bottom"></view>
+      <view class="picker-highlight"></view>
+
+      <view class="picker-column">
+        <text class="picker-item inactive">👔</text>
+        <text class="picker-item active">{{topItem}}</text>
+        <text class="picker-item inactive">🧥</text>
+      </view>
+      <view class="picker-column">
+        <text class="picker-item inactive">🩳</text>
+        <text class="picker-item active">{{bottomItem}}</text>
+        <text class="picker-item inactive">👗</text>
+      </view>
+      <view class="picker-column">
+        <text class="picker-item inactive">🥾</text>
+        <text class="picker-item active">{{shoeItem}}</text>
+        <text class="picker-item inactive">👟</text>
+      </view>
+    </view>
+
+    <view class="generate-btn {{isGenerating ? 'generating' : ''}}" bindtap="simulateSpin">
+      <text class="btn-icon" wx:if="{{!isGenerating}}">✨</text>
+      <image class="btn-icon spin" src="https://img.icons8.com/ios-glyphs/30/ffffff/refresh.png" wx:if="{{isGenerating}}"></image>
+      <text>{{btnText}}</text>
+    </view>
+  </view>
+
+  <!-- A/B Voting Card -->
+  <view class="voting-section">
+    <view class="voting-header">发起社交投票</view>
+    <view class="voting-card">
+      <view class="voting-bg-circle"></view>
+      <view class="voting-card-header">
+        <text class="voting-title">明天约会穿哪套？</text>
+        <text class="voting-tag">进行中</text>
+      </view>
+      
+      <view class="voting-options">
+        <view class="option-a">
+          <text class="option-emoji">👗</text>
+          <text class="option-emoji">👠</text>
+          <text class="option-label">A</text>
+        </view>
+        <view class="vs-text">VS</view>
+        <view class="option-b">
+          <text class="option-emoji">👚</text>
+          <text class="option-emoji">👖</text>
+          <view class="check-icon">✓</view>
+          <text class="option-label">B</text>
+        </view>
+      </view>
+
+      <view class="wechat-btn">
+        <image class="wechat-icon" src="https://img.icons8.com/color/48/wechat.png"></image>
+        <text>发送给微信好友</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- Custom Tab Bar -->
+  <view class="tab-bar glass">
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/wardrobe/wardrobe">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/shirt.png"></image>
+      <text class="tab-text">衣橱</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/canvas/canvas">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/magic-wand.png"></image>
+      <text class="tab-text">画布</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/calendar/calendar">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/calendar.png"></image>
+      <text class="tab-text">日历</text>
+    </view>
+    <view class="tab-item active">
+      <image class="tab-icon" src="https://img.icons8.com/ios-filled/50/8A2BE2/compass.png"></image>
+      <text class="tab-text">发现</text>
+    </view>
+  </view>
+</view>
