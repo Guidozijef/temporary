@@ -1,0 +1,92 @@
+<view class="container">
+  <view class="header" style="padding-top: {{statusBarHeight + 20}}px;">
+    <view class="user-info">
+      <image class="avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop" mode="aspectFill"></image>
+      <view class="user-details">
+        <text class="user-name">OOTD 达人</text>
+        <text class="user-desc">已记录 32 套穿搭</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="content-scroll">
+    <view class="section-header">
+      <text class="section-title">穿搭日历</text>
+    </view>
+    <view class="calendar-card">
+      <view class="calendar-header">
+        <text class="month-title">2026年 2月</text>
+        <view class="nav-arrows">
+          <text class="arrow">‹</text>
+          <text class="arrow">›</text>
+        </view>
+      </view>
+      <view class="week-days">
+        <text>日</text><text>一</text><text>二</text><text>三</text><text>四</text><text>五</text><text>六</text>
+      </view>
+      <view class="days-grid">
+        <view 
+          wx:for="{{days}}" 
+          wx:key="index"
+          class="day {{item.prev ? 'prev-month' : ''}} {{item.hasRecord ? 'has-dot' : ''}} {{activeDate === item.date && !item.prev ? 'active' : ''}}"
+          bindtap="selectDate"
+          data-date="{{item.date}}"
+          data-prev="{{item.prev}}"
+        >
+          <view class="{{activeDate === item.date && !item.prev ? 'active-bg' : ''}}">{{item.date}}</view>
+          <view class="dot" wx:if="{{item.hasRecord && activeDate !== item.date}}"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section-header">
+      <text class="section-title">发现灵感</text>
+    </view>
+    <view class="waterfall">
+      <view class="waterfall-col">
+        <view class="card" wx:for="{{inspirations}}" wx:key="id" wx:if="{{index % 2 === 0}}">
+          <image class="card-img" src="{{item.img}}" mode="widthFix"></image>
+          <view class="card-info">
+            <text class="card-title">{{item.title}}</text>
+            <view class="card-meta">
+              <text class="author">{{item.author}}</text>
+              <view class="likes"><text class="heart">♥</text> {{item.likes}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+      <view class="waterfall-col">
+        <view class="card" wx:for="{{inspirations}}" wx:key="id" wx:if="{{index % 2 !== 0}}">
+          <image class="card-img" src="{{item.img}}" mode="widthFix"></image>
+          <view class="card-info">
+            <text class="card-title">{{item.title}}</text>
+            <view class="card-meta">
+              <text class="author">{{item.author}}</text>
+              <view class="likes"><text class="heart">♥</text> {{item.likes}}</view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- Custom Tab Bar -->
+  <view class="tab-bar glass">
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/wardrobe/wardrobe">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/shirt.png"></image>
+      <text class="tab-text">衣橱</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/canvas/canvas">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/magic-wand.png"></image>
+      <text class="tab-text">画布</text>
+    </view>
+    <view class="tab-item" bindtap="switchTab" data-path="/pages/looks/looks">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/999999/hanger.png"></image>
+      <text class="tab-text">穿搭</text>
+    </view>
+    <view class="tab-item active">
+      <image class="tab-icon" src="https://img.icons8.com/ios-glyphs/50/8A2BE2/user.png"></image>
+      <text class="tab-text">我的</text>
+    </view>
+  </view>
+</view>
