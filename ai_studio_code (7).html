@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OOTD 智能电子衣橱 - 弥散光影高级版</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- 自定义 Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bgLight: '#F4F5F7', 
+                        primary: '#8B5CF6',     // 主色：优雅紫 (Violet)
+                        primaryDark: '#6D28D9', // 深紫
+                        secondary: '#3B82F6',   // 副色：明亮蓝 (Blue)
+                        textMain: '#1E293B',    // 主文本色
+                        textSub: '#64748B',     // 副文本色
+                    },
+                    boxShadow: {
+                        'glass': '0 8px 32px 0 rgba(31, 38, 135, 0.07)',
+                        'float': '0 20px 40px -10px rgba(139, 92, 246, 0.25)',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 隐藏滚动条但保留滚动功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        /* 全局平滑过渡 */
+        * { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+
+        /* 手机外壳：现代圆润风格 */
+        .phone-mockup {
+            width: 380px;
+            height: 820px;
+            border: 8px solid #E2E8F0;
+            border-radius: 56px;
+            background-color: #FAFAFA;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), inset 0 0 0 4px #F1F5F9;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 灵动岛 */
+        .dynamic-island {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 110px;
+            height: 30px;
+            background-color: #0F172A;
+            border-radius: 20px;
+            z-index: 50;
+        }
+
+        /* 弥散光影背景 (Mesh Gradient) - 紫蓝交织 */
+        .mesh-bg {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #FAFAFA;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .mesh-blob-1 {
+            position: absolute;
+            top: -10%; left: -10%;
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+        }
+        .mesh-blob-2 {
+            position: absolute;
+            top: 20%; right: -20%;
+            width: 250px; height: 250px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(255,255,255,0) 70%);
+            border-radius: 50%;
+            filter: blur(40px);
+        }
+
+        /* 极致毛玻璃面板 */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.03);
+        }
+
+        /* 渐变文本 */
+        .text-gradient {
+            background: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 悬浮 Action Sheet */
+        .action-sheet-overlay { opacity: 0; pointer-events: none; }
+        .action-sheet-overlay.active { opacity: 1; pointer-events: auto; z-index: 100; }
+        .action-sheet { transform: translateY(100%); }
+        .action-sheet-overlay.active .action-sheet { transform: translateY(0); }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen p-10 font-sans text-textMain flex flex-wrap justify-center gap-12">
+
+    <!-- ==============================================
+         【界面 1】衣橱首页：轻盈通透的瀑布流
+    =============================================== -->
+    <div class="phone-mockup">
+        <div class="mesh-bg"><div class="mesh-blob-1"></div><div class="mesh-blob-2"></div></div>
+        <div class="dynamic-island"></div>
+        <div class="absolute top-0 w-full h-14 flex justify-between items-end px-7 pb-2 text-[13px] font-semibold z-40 text-slate-800">
+            <span>14:59</span>
+            <div class="flex space-x-1.5 items-center"><i class="fa-solid fa-signal text-[10px]"></i><i class="fa-solid fa-wifi text-[10px]"></i><i class="fa-solid fa-battery-full text-sm"></i></div>
+        </div>
+
+        <div class="h-full pt-16 pb-28 overflow-y-auto no-scrollbar relative z-10">
+            <!-- 头部问候与数据 -->
+            <div class="px-6 py-2 flex justify-between items-center mb-2">
+                <div>
+                    <h1 class="text-2xl font-bold">我的衣橱</h1>
+                    <p class="text-xs text-textSub mt-1">共 <span class="text-primary font-bold">128</span> 件单品，本周新增 3 件</p>
+                </div>
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary p-[2px] shadow-md">
+                    <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" class="w-full h-full bg-white rounded-full object-cover">
+                </div>
+            </div>
+
+            <!-- 搜索与筛选 -->
+            <div class="px-6 mb-4">
+                <div class="w-full h-10 glass-panel rounded-2xl flex items-center px-4 text-sm text-slate-400 focus-within:ring-2 focus-within:ring-primary/50">
+                    <i class="fa-solid fa-magnifying-glass mr-2"></i>
+                    <input type="text" placeholder="搜索颜色、季节、场合..." class="bg-transparent border-none outline-none w-full text-slate-700 placeholder-slate-400">
+                </div>
+            </div>
+
+            <!-- 胶囊分类 Tab -->
+            <div class="flex overflow-x-auto no-scrollbar px-6 pb-4 space-x-3">
+                <button class="px-5 py-2 bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold rounded-full shadow-md whitespace-nowrap">全部单品</button>
+                <button class="px-5 py-2 glass-panel text-textSub hover:text-primary text-sm font-medium rounded-full whitespace-nowrap">外套</button>
+                <button class="px-5 py-2 glass-panel text-textSub hover:text-primary text-sm font-medium rounded-full whitespace-nowrap">内搭</button>
+                <button class="px-5 py-2 glass-panel text-textSub hover:text-primary text-sm font-medium rounded-full whitespace-nowrap">下装</button>
+            </div>
+
+            <!-- 单品瀑布流网格 -->
+            <div class="grid grid-cols-2 gap-4 px-6 pb-10">
+                <!-- 单品卡片 -->
+                <div class="glass-panel rounded-[1.5rem] p-3 shadow-sm hover:-translate-y-1 hover:shadow-float cursor-pointer relative group">
+                    <div class="absolute top-3 right-3 z-10 w-6 h-6 bg-white/80 rounded-full flex items-center justify-center text-[10px] text-primary shadow-sm backdrop-blur-sm"><i class="fa-regular fa-heart"></i></div>
+                    <div class="bg-slate-50 h-36 rounded-2xl flex items-center justify-center text-6xl mb-3 relative overflow-hidden">
+                        <span class="drop-shadow-lg z-10 transition-transform group-hover:scale-110">🧥</span>
+                    </div>
+                    <div class="px-1">
+                        <div class="text-[13px] font-bold text-slate-800">羊毛廓形大衣</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-1">
+                            <span class="w-2 h-2 rounded-full bg-[#D4C4B7]"></span><span>燕麦色 · 冬季</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-[1.5rem] p-3 shadow-sm hover:-translate-y-1 hover:shadow-float cursor-pointer relative group">
+                    <div class="bg-slate-50 h-36 rounded-2xl flex items-center justify-center text-6xl mb-3 relative overflow-hidden">
+                        <span class="drop-shadow-lg z-10 transition-transform group-hover:scale-110">👖</span>
+                    </div>
+                    <div class="px-1">
+                        <div class="text-[13px] font-bold text-slate-800">直筒微喇牛仔裤</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-1">
+                            <span class="w-2 h-2 rounded-full bg-blue-400"></span><span>水洗蓝 · 四季</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-[1.5rem] p-3 shadow-sm hover:-translate-y-1 hover:shadow-float cursor-pointer relative group">
+                    <div class="bg-slate-50 h-36 rounded-2xl flex items-center justify-center text-6xl mb-3 relative overflow-hidden">
+                        <span class="drop-shadow-lg z-10 transition-transform group-hover:scale-110">👗</span>
+                    </div>
+                    <div class="px-1">
+                        <div class="text-[13px] font-bold text-slate-800">法式碎花连衣裙</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-1">
+                            <span class="w-2 h-2 rounded-full bg-green-200"></span><span>碎花 · 春夏</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel rounded-[1.5rem] p-3 shadow-sm hover:-translate-y-1 hover:shadow-float cursor-pointer relative group">
+                    <div class="bg-slate-50 h-36 rounded-2xl flex items-center justify-center text-6xl mb-3 relative overflow-hidden">
+                        <span class="drop-shadow-lg z-10 transition-transform group-hover:scale-110">👠</span>
+                    </div>
+                    <div class="px-1">
+                        <div class="text-[13px] font-bold text-slate-800">尖头复古高跟鞋</div>
+                        <div class="text-[11px] text-slate-400 mt-0.5 flex items-center space-x-1">
+                            <span class="w-2 h-2 rounded-full bg-red-700"></span><span>酒红 · 约会</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 悬浮胶囊底部导航栏 -->
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] h-16 glass-panel rounded-full flex justify-between items-center px-6 z-40 shadow-glass">
+            <div class="flex flex-col items-center text-primary cursor-pointer group">
+                <i class="fa-solid fa-shirt text-lg mb-0.5 group-hover:-translate-y-1 transition-transform"></i>
+                <span class="text-[10px] font-bold">衣橱</span>
+            </div>
+            <div class="flex flex-col items-center text-slate-400 hover:text-secondary cursor-pointer group">
+                <i class="fa-solid fa-layer-group text-lg mb-0.5 group-hover:-translate-y-1 transition-transform"></i>
+                <span class="text-[10px] font-medium">搭配</span>
+            </div>
+            
+            <!-- 居中耀眼的上传按钮 -->
+            <button class="w-14 h-14 bg-gradient-to-tr from-primary to-secondary text-white rounded-full shadow-float flex items-center justify-center text-2xl hover:scale-105 absolute left-1/2 -translate-x-1/2 -top-4 border-4 border-[#FAFAFA]" onclick="toggleActionSheet(true)">
+                <i class="fa-solid fa-plus"></i>
+            </button>
+
+            <div class="flex flex-col items-center text-slate-400 hover:text-secondary cursor-pointer group ml-10">
+                <i class="fa-solid fa-calendar-day text-lg mb-0.5 group-hover:-translate-y-1 transition-transform"></i>
+                <span class="text-[10px] font-medium">日历</span>
+            </div>
+            <div class="flex flex-col items-center text-slate-400 hover:text-secondary cursor-pointer group">
+                <i class="fa-solid fa-compass text-lg mb-0.5 group-hover:-translate-y-1 transition-transform"></i>
+                <span class="text-[10px] font-medium">发现</span>
+            </div>
+        </div>
+
+        <!-- 智能录入弹窗 (Action Sheet) -->
+        <div id="uploadActionSheet" class="action-sheet-overlay absolute inset-0 flex flex-col justify-end bg-slate-900/40 backdrop-blur-sm px-4 pb-10 z-50 transition-opacity duration-300">
+            <div class="absolute inset-0" onclick="toggleActionSheet(false)"></div>
+            <div class="action-sheet relative z-10 w-full transition-transform duration-300">
+                <div class="glass-panel bg-white/90 rounded-[2rem] p-6 text-center shadow-2xl mb-4">
+                    <div class="w-12 h-1 bg-slate-300 rounded-full mx-auto mb-6"></div>
+                    <h3 class="text-lg font-bold text-slate-800 mb-1">录入新单品</h3>
+                    <p class="text-xs text-slate-500 mb-6">AI 将自动为您去除背景并识别属性</p>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <button class="py-4 bg-primary/10 rounded-2xl text-primary flex flex-col items-center justify-center space-y-2 hover:bg-primary/20" onclick="toggleActionSheet(false)">
+                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-solid fa-camera text-xl"></i></div>
+                            <span class="text-sm font-bold">拍照上传</span>
+                        </button>
+                        <button class="py-4 bg-secondary/10 rounded-2xl text-secondary flex flex-col items-center justify-center space-y-2 hover:bg-secondary/20" onclick="toggleActionSheet(false)">
+                            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-regular fa-image text-xl"></i></div>
+                            <span class="text-sm font-bold">相册选择</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==============================================
+         【界面 2】智能录入结果：AI 抠图与属性识别
+    =============================================== -->
+    <div class="phone-mockup relative">
+        <div class="mesh-bg"><div class="mesh-blob-1" style="left:50%; top:-20%"></div></div>
+        <div class="dynamic-island"></div>
+        <div class="absolute top-0 w-full h-14 flex justify-between items-end px-7 pb-2 text-[13px] font-semibold z-40 text-slate-800">
+            <span>14:59</span>
+            <div class="flex space-x-1.5 items-center"><i class="fa-solid fa-signal text-[10px]"></i><i class="fa-solid fa-wifi text-[10px]"></i><i class="fa-solid fa-battery-full text-sm"></i></div>
+        </div>
+
+        <div class="h-full pt-16 pb-8 overflow-y-auto no-scrollbar relative flex flex-col z-10">
+            <div class="px-6 py-2 flex justify-between items-center mb-2">
+                <button class="w-8 h-8 glass-panel rounded-full flex items-center justify-center text-slate-500 hover:text-slate-800"><i class="fa-solid fa-chevron-left text-sm"></i></button>
+                <h2 class="font-bold text-lg text-slate-800">智能识别结果</h2>
+                <button class="w-8 h-8 rounded-full flex items-center justify-center text-primary font-bold"><i class="fa-solid fa-ellipsis"></i></button>
+            </div>
+
+            <div class="px-6 flex-1 pb-10">
+                <!-- AI 抠图展示区：赛博扫描感 -->
+                <div class="mt-2 glass-panel rounded-[2rem] h-60 w-full flex flex-col items-center justify-center relative overflow-hidden border border-white">
+                    <!-- 模拟透明背景图案 -->
+                    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#8B5CF6 1px, transparent 1px); background-size: 10px 10px;"></div>
+                    
+                    <div class="text-[120px] drop-shadow-2xl z-10 animate-pulse">🧥</div>
+                    
+                    <!-- AI 成功提示标签 -->
+                    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg flex items-center space-x-2 border border-primary/20 whitespace-nowrap">
+                        <i class="fa-solid fa-sparkles text-primary text-xs"></i>
+                        <span class="text-xs font-bold text-gradient">AI 抠图完成</span>
+                    </div>
+                </div>
+
+                <!-- 智能表单区域 -->
+                <div class="mt-6 space-y-4">
+                    <div class="glass-panel rounded-2xl p-4 flex justify-between items-center cursor-pointer hover:bg-white/60">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center text-primary"><i class="fa-solid fa-tags text-xs"></i></div>
+                            <span class="text-sm font-bold text-slate-700">单品分类</span>
+                        </div>
+                        <div class="flex items-center text-slate-500 space-x-2">
+                            <span class="text-sm font-medium bg-white px-3 py-1 rounded-md shadow-sm">外套 / 大衣</span>
+                            <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-4">
+                        <div class="flex items-center space-x-3 mb-3">
+                            <div class="w-8 h-8 bg-secondary/10 rounded-full flex items-center justify-center text-secondary"><i class="fa-solid fa-palette text-xs"></i></div>
+                            <span class="text-sm font-bold text-slate-700">AI 提取颜色</span>
+                        </div>
+                        <div class="flex space-x-3 pl-11">
+                            <div class="w-8 h-8 rounded-full bg-[#D4C4B7] shadow-inner ring-2 ring-offset-2 ring-primary relative flex justify-center items-center">
+                                <i class="fa-solid fa-check text-white text-xs drop-shadow"></i>
+                            </div>
+                            <div class="w-8 h-8 rounded-full bg-[#333333] shadow-inner border border-slate-200"></div>
+                            <div class="w-8 h-8 rounded-full border-2 border-dashed border-slate-300 flex items-center justify-center text-slate-400 cursor-pointer hover:border-primary hover:text-primary">
+                                <i class="fa-solid fa-plus text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="glass-panel rounded-2xl p-4">
+                        <div class="text-sm font-bold text-slate-700 mb-3 pl-1">适合季节</div>
+                        <div class="flex flex-wrap gap-2">
+                            <button class="px-4 py-1.5 rounded-lg bg-white text-slate-500 text-xs font-medium border border-transparent hover:border-slate-200">🌸 春季</button>
+                            <button class="px-4 py-1.5 rounded-lg bg-primary/10 text-primary text-xs font-bold border border-primary/20">🍂 秋季</button>
+                            <button class="px-4 py-1.5 rounded-lg bg-secondary/10 text-secondary text-xs font-bold border border-secondary/20">❄️ 冬季</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 底部操作按钮 -->
+                <button class="w-full mt-8 py-3.5 bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold rounded-xl shadow-float hover:opacity-90 active:scale-95">
+                    保存至我的衣橱
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==============================================
+         【界面 3】灵感画布：自由拖拽搭配
+    =============================================== -->
+    <div class="phone-mockup">
+        <div class="mesh-bg"><div class="mesh-blob-2" style="top:-10%; left:-10%; width:400px; height:400px; opacity:0.7"></div></div>
+        <div class="dynamic-island"></div>
+        <div class="absolute top-0 w-full h-14 flex justify-between items-end px-7 pb-2 text-[13px] font-semibold z-40 text-slate-800">
+            <span>14:59</span>
+            <div class="flex space-x-1.5 items-center"><i class="fa-solid fa-signal text-[10px]"></i><i class="fa-solid fa-wifi text-[10px]"></i><i class="fa-solid fa-battery-full text-sm"></i></div>
+        </div>
+
+        <div class="h-full flex flex-col relative z-10">
+            <div class="pt-16 px-6 pb-2 flex justify-between items-center absolute w-full z-20">
+                <button class="w-8 h-8 glass-panel rounded-full flex items-center justify-center text-slate-600"><i class="fa-solid fa-xmark"></i></button>
+                <div class="flex space-x-2">
+                    <button class="w-8 h-8 glass-panel rounded-full flex items-center justify-center text-primary"><i class="fa-solid fa-wand-magic-sparkles text-sm"></i></button>
+                    <button class="px-4 py-1.5 rounded-full bg-slate-800 text-white text-xs font-bold shadow-md">导出</button>
+                </div>
+            </div>
+
+            <!-- 画布操作区 -->
+            <div class="flex-1 relative overflow-hidden flex flex-col items-center pt-24" style="background-image: radial-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px); background-size: 20px 20px;">
+                
+                <div class="absolute top-[25%] left-[20%] text-[110px] drop-shadow-2xl z-20 cursor-move bg-white/40 backdrop-blur-md rounded-3xl p-2 border border-white/60 shadow-glass transform rotate-[-5deg]">
+                    🧥
+                    <div class="absolute -top-3 -right-3 w-6 h-6 bg-white rounded-full flex items-center justify-center text-[10px] text-primary shadow-md border border-slate-100"><i class="fa-solid fa-rotate"></i></div>
+                </div>
+                <div class="absolute top-[45%] left-[30%] text-[110px] drop-shadow-xl z-10 cursor-move transform rotate-[2deg]">👖</div>
+            </div>
+
+            <!-- 底部素材抽屉 -->
+            <div class="h-[260px] glass-panel rounded-t-[2.5rem] flex flex-col z-20 pb-6 relative border-t border-white/80 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
+                <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-4 mb-4"></div>
+
+                <div class="flex justify-around px-6 border-b border-slate-200/50 pb-3 text-xs font-bold text-slate-400">
+                    <div class="text-primary border-b-2 border-primary pb-2 px-2 cursor-pointer">单品库</div>
+                    <div class="hover:text-slate-700 cursor-pointer pb-2 px-2">排版模板</div>
+                    <div class="hover:text-slate-700 cursor-pointer pb-2 px-2">贴纸/文字</div>
+                </div>
+
+                <div class="p-6 flex overflow-x-auto space-x-4 no-scrollbar items-center flex-1">
+                    <div class="min-w-[70px] h-[70px] bg-white rounded-2xl flex items-center justify-center text-4xl shadow-sm border border-slate-100 cursor-grab hover:scale-105 hover:shadow-md">🎽</div>
+                    <div class="min-w-[70px] h-[70px] bg-white rounded-2xl flex items-center justify-center text-4xl shadow-sm border border-slate-100 cursor-grab hover:scale-105 hover:shadow-md">👔</div>
+                    <div class="min-w-[70px] h-[70px] bg-white rounded-2xl flex items-center justify-center text-4xl shadow-sm border border-slate-100 cursor-grab hover:scale-105 hover:shadow-md">👗</div>
+                    <div class="min-w-[70px] h-[70px] bg-white rounded-2xl flex items-center justify-center text-4xl shadow-sm border border-slate-100 cursor-grab hover:scale-105 hover:shadow-md">🩳</div>
+                    <div class="min-w-[70px] h-[70px] bg-white rounded-2xl flex items-center justify-center text-4xl shadow-sm border border-slate-100 cursor-grab hover:scale-105 hover:shadow-md">👟</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- ==============================================
+         【界面 4】穿搭日历与胶囊系列
+    =============================================== -->
+    <div class="phone-mockup">
+        <div class="mesh-bg"><div class="mesh-blob-1" style="top:50%; left:50%"></div></div>
+        <div class="dynamic-island"></div>
+        <div class="absolute top-0 w-full h-14 flex justify-between items-end px-7 pb-2 text-[13px] font-semibold z-40 text-slate-800">
+            <span>14:59</span>
+            <div class="flex space-x-1.5 items-center"><i class="fa-solid fa-signal text-[10px]"></i><i class="fa-solid fa-wifi text-[10px]"></i><i class="fa-solid fa-battery-full text-sm"></i></div>
+        </div>
+
+        <div class="h-full pt-16 pb-28 overflow-y-auto no-scrollbar relative z-10">
+            <div class="px-6 py-2 flex justify-between items-end mb-4">
+                <h1 class="text-2xl font-bold">穿搭日历</h1>
+                <span class="text-sm font-bold text-primary bg-primary/10 px-3 py-1 rounded-full">2026年 2月</span>
+            </div>
+
+            <!-- 横向周历 -->
+            <div class="px-6 mb-6">
+                <div class="glass-panel rounded-[2rem] p-4 flex justify-between items-center text-center">
+                    <div class="flex flex-col space-y-2 text-slate-400">
+                        <span class="text-[10px] font-bold">日</span>
+                        <span class="text-sm font-medium">23</span>
+                    </div>
+                    <div class="flex flex-col space-y-2 text-slate-400">
+                        <span class="text-[10px] font-bold">一</span>
+                        <span class="text-sm font-medium">24</span>
+                    </div>
+                    <div class="flex flex-col space-y-2 text-slate-400">
+                        <span class="text-[10px] font-bold">二</span>
+                        <div class="relative">
+                            <span class="text-sm font-medium">25</span>
+                            <div class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 bg-secondary rounded-full"></div>
+                        </div>
+                    </div>
+                    <!-- 选中的今天 -->
+                    <div class="flex flex-col space-y-2">
+                        <span class="text-[10px] font-bold text-primary">今天</span>
+                        <div class="w-8 h-8 bg-gradient-to-tr from-primary to-secondary text-white rounded-full flex items-center justify-center shadow-md font-bold text-sm">26</div>
+                    </div>
+                    <div class="flex flex-col space-y-2 text-slate-400">
+                        <span class="text-[10px] font-bold">四</span>
+                        <span class="text-sm font-medium">27</span>
+                    </div>
+                    <div class="flex flex-col space-y-2 text-slate-400">
+                        <span class="text-[10px] font-bold">五</span>
+                        <span class="text-sm font-medium">28</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 今日穿搭卡片 -->
+            <div class="px-6 mb-8">
+                <h2 class="text-sm font-bold text-slate-700 mb-3 flex justify-between items-center">
+                    <span>OOTD 记录</span>
+                    <button class="text-xs text-primary font-medium bg-primary/10 px-2 py-0.5 rounded">编辑</button>
+                </h2>
+                <div class="glass-panel rounded-[2rem] p-4 flex space-x-4 items-center border border-white">
+                    <div class="w-24 h-24 bg-white rounded-2xl flex flex-wrap items-center justify-center p-2 shadow-sm relative">
+                        <div class="text-3xl absolute top-1 left-2 drop-shadow">🧥</div>
+                        <div class="text-3xl absolute bottom-1 right-2 drop-shadow">👖</div>
+                    </div>
+                    <div class="flex-1">
+                        <div class="text-sm font-bold text-slate-800 mb-1">初春通勤极简风</div>
+                        <div class="text-xs text-slate-500 mb-2"><i class="fa-solid fa-temperature-half mr-1"></i> 18°C · 晴天</div>
+                        <div class="flex space-x-2">
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md">大衣</span>
+                            <span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md">牛仔裤</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 胶囊系列 -->
+            <div class="px-6 mb-2 flex justify-between items-end">
+                <h2 class="text-lg font-bold">胶囊系列</h2>
+                <button class="text-primary text-xs font-bold flex items-center"><i class="fa-solid fa-plus mr-1"></i>新建</button>
+            </div>
+            <div class="flex overflow-x-auto no-scrollbar px-6 pb-5 space-x-4">
+                <div class="min-w-[140px] h-36 glass-panel rounded-2xl p-3 flex flex-col justify-between relative overflow-hidden group cursor-pointer border border-white">
+                    <div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent z-0"></div>
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-primary shadow-sm z-10"><i class="fa-solid fa-plane"></i></div>
+                    <div class="z-10 mt-auto">
+                        <div class="text-sm font-bold text-slate-800">三亚度假打包</div>
+                        <div class="text-[10px] text-slate-500 mt-1">包含 8 件单品</div>
+                    </div>
+                </div>
+                <div class="min-w-[140px] h-36 glass-panel rounded-2xl p-3 flex flex-col justify-between relative overflow-hidden group cursor-pointer border border-white">
+                    <div class="absolute inset-0 bg-gradient-to-br from-secondary/10 to-transparent z-0"></div>
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-secondary shadow-sm z-10"><i class="fa-solid fa-briefcase"></i></div>
+                    <div class="z-10 mt-auto">
+                        <div class="text-sm font-bold text-slate-800">一周职场穿搭</div>
+                        <div class="text-[10px] text-slate-500 mt-1">包含 5 套装扮</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 悬浮导航栏 -->
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] h-16 glass-panel rounded-full flex justify-between items-center px-6 z-40 shadow-glass">
+            <div class="flex flex-col items-center text-slate-400 hover:text-primary cursor-pointer"><i class="fa-solid fa-shirt text-lg mb-0.5"></i><span class="text-[10px] font-medium">衣橱</span></div>
+            <div class="flex flex-col items-center text-slate-400 hover:text-primary cursor-pointer"><i class="fa-solid fa-layer-group text-lg mb-0.5"></i><span class="text-[10px] font-medium">搭配</span></div>
+            <!-- 占位，留给悬浮的 + 号 -->
+            <div class="w-14"></div>
+            <div class="flex flex-col items-center text-secondary cursor-pointer"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i><span class="text-[10px] font-bold">日历</span></div>
+            <div class="flex flex-col items-center text-slate-400 hover:text-secondary cursor-pointer"><i class="fa-solid fa-compass text-lg mb-0.5"></i><span class="text-[10px] font-medium">发现</span></div>
+        </div>
+    </div>
+
+
+    <!-- ==============================================
+         【界面 5】探索与互动：灵感扭蛋与投票
+    =============================================== -->
+    <div class="phone-mockup relative">
+        <div class="mesh-bg"><div class="mesh-blob-2" style="top:20%; right:10%"></div></div>
+        <div class="dynamic-island"></div>
+        <div class="absolute top-0 w-full h-14 flex justify-between items-end px-7 pb-2 text-[13px] font-semibold z-40 text-slate-800">
+            <span>14:59</span>
+            <div class="flex space-x-1.5 items-center"><i class="fa-solid fa-signal text-[10px]"></i><i class="fa-solid fa-wifi text-[10px]"></i><i class="fa-solid fa-battery-full text-sm"></i></div>
+        </div>
+
+        <div class="h-full pt-16 pb-28 overflow-y-auto no-scrollbar relative z-10">
+            <div class="px-6 py-2 mb-4">
+                <h1 class="text-2xl font-bold">发现灵感</h1>
+            </div>
+
+            <!-- 顶部 Toggle -->
+            <div class="mx-6 glass-panel p-1 rounded-xl flex mb-6">
+                <button class="flex-1 py-1.5 bg-white shadow-sm rounded-lg text-sm font-bold text-primary">灵感扭蛋</button>
+                <button class="flex-1 py-1.5 text-slate-500 text-sm font-medium hover:text-slate-800">好友投票</button>
+            </div>
+
+            <!-- 灵感扭蛋机 -->
+            <div class="mx-6 glass-panel rounded-[2rem] p-6 shadow-sm border border-white flex flex-col items-center text-center relative overflow-hidden">
+                <h3 class="text-lg font-bold text-slate-800 mb-1">不知道穿什么？</h3>
+                <p class="text-xs text-slate-500 mb-6">点击随机抽取今天的 OOTD</p>
+
+                <!-- 扭蛋机视图 -->
+                <div class="w-full h-36 bg-white/50 rounded-2xl relative flex justify-between px-4 overflow-hidden mb-6 border border-white shadow-inner">
+                    <div class="absolute top-1/2 left-0 w-full h-12 bg-primary/5 -translate-y-1/2 pointer-events-none rounded-lg border-y border-primary/10"></div>
+                    <div class="absolute top-0 left-0 w-full h-10 bg-gradient-to-b from-white/80 to-transparent pointer-events-none z-10"></div>
+                    <div class="absolute bottom-0 left-0 w-full h-10 bg-gradient-to-t from-white/80 to-transparent pointer-events-none z-10"></div>
+
+                    <div class="flex-1 flex flex-col items-center justify-center space-y-4 text-4xl" id="slot-1">
+                        <div class="opacity-30 scale-75 blur-[1px]">👔</div>
+                        <div class="opacity-100 scale-110 drop-shadow-md z-10" id="slot-1-active">👚</div>
+                        <div class="opacity-30 scale-75 blur-[1px]">🧥</div>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-center space-y-4 text-4xl" id="slot-2">
+                        <div class="opacity-30 scale-75 blur-[1px]">🩳</div>
+                        <div class="opacity-100 scale-110 drop-shadow-md z-10" id="slot-2-active">👖</div>
+                        <div class="opacity-30 scale-75 blur-[1px]">👗</div>
+                    </div>
+                    <div class="flex-1 flex flex-col items-center justify-center space-y-4 text-4xl" id="slot-3">
+                        <div class="opacity-30 scale-75 blur-[1px]">🥾</div>
+                        <div class="opacity-100 scale-110 drop-shadow-md z-10" id="slot-3-active">👠</div>
+                        <div class="opacity-30 scale-75 blur-[1px]">👟</div>
+                    </div>
+                </div>
+
+                <button id="btn-generate" class="w-full py-3.5 bg-gradient-to-r from-primary to-secondary text-white text-sm font-bold rounded-xl shadow-float hover:scale-105 active:scale-95 transition-all" onclick="simulateSpin()">
+                    ✨ 摇一摇生成搭配
+                </button>
+            </div>
+
+            <!-- 社交投票卡片 -->
+            <div class="mx-6 mt-8 mb-4">
+                <h2 class="text-sm font-bold text-slate-700 mb-3 pl-1">我的发起</h2>
+                <div class="glass-panel rounded-[2rem] p-5 shadow-sm border border-white relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="text-sm font-bold text-slate-800">周五晚音乐节穿哪套？</div>
+                        <span class="text-[10px] font-bold bg-secondary/10 text-secondary px-2 py-1 rounded-full animate-pulse">进行中</span>
+                    </div>
+                    
+                    <div class="flex space-x-3 mb-5">
+                        <!-- 选项 A (次要) -->
+                        <div class="flex-1 bg-white/60 rounded-2xl p-4 flex flex-col items-center relative border border-slate-100">
+                            <div class="text-3xl drop-shadow mb-1">👗</div>
+                            <div class="text-3xl drop-shadow">👠</div>
+                            <div class="absolute top-2 left-2 text-xs font-bold text-slate-400">A</div>
+                            <div class="absolute bottom-2 right-2 text-xs font-bold text-slate-500">32%</div>
+                        </div>
+                        <!-- 选项 B (主导 - 紫色高亮) -->
+                        <div class="flex-1 bg-primary/5 rounded-2xl p-4 flex flex-col items-center relative border border-primary/30 shadow-[0_0_15px_rgba(139,92,246,0.1)]">
+                            <div class="text-3xl drop-shadow-md mb-1">👚</div>
+                            <div class="text-3xl drop-shadow-md">👖</div>
+                            <div class="absolute top-2 left-2 text-xs font-bold text-primary">B</div>
+                            <div class="absolute bottom-2 right-2 text-xs font-bold text-primary">68%</div>
+                            <div class="absolute -top-2 -right-2 w-5 h-5 bg-gradient-to-br from-primary to-secondary text-white rounded-full flex items-center justify-center text-[10px] shadow-sm"><i class="fa-solid fa-check"></i></div>
+                        </div>
+                    </div>
+                    
+                    <button class="w-full py-3 bg-[#07C160] text-white text-sm font-bold rounded-xl flex items-center justify-center space-x-2 shadow-md hover:bg-green-600 transition-colors">
+                        <i class="fa-brands fa-weixin text-lg"></i><span>分享给微信好友</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 悬浮导航栏 -->
+        <div class="absolute bottom-6 left-1/2 transform -translate-x-1/2 w-[90%] h-16 glass-panel rounded-full flex justify-between items-center px-6 z-40 shadow-glass">
+            <div class="flex flex-col items-center text-slate-400 hover:text-primary cursor-pointer"><i class="fa-solid fa-shirt text-lg mb-0.5"></i><span class="text-[10px] font-medium">衣橱</span></div>
+            <div class="flex flex-col items-center text-slate-400 hover:text-primary cursor-pointer"><i class="fa-solid fa-layer-group text-lg mb-0.5"></i><span class="text-[10px] font-medium">搭配</span></div>
+            <div class="w-14"></div>
+            <div class="flex flex-col items-center text-slate-400 hover:text-secondary cursor-pointer"><i class="fa-solid fa-calendar-day text-lg mb-0.5"></i><span class="text-[10px] font-medium">日历</span></div>
+            <div class="flex flex-col items-center text-secondary cursor-pointer"><i class="fa-solid fa-compass text-lg mb-0.5"></i><span class="text-[10px] font-bold">发现</span></div>
+        </div>
+    </div>
+
+    <!-- JS 交互逻辑 -->
+    <script>
+        // 控制底部 Action Sheet
+        function toggleActionSheet(show) {
+            const overlay = document.getElementById('uploadActionSheet');
+            if (show) {
+                overlay.classList.add('active');
+            } else {
+                overlay.classList.remove('active');
+            }
+        }
+
+        // 扭蛋机动画
+        const tops = ['👚', '🧥', '🎽', '👔', '👕'];
+        const bottoms = ['👖', '🩳', '👗'];
+        const shoes =['👟', '🥿', '👠', '🥾'];
+
+        function simulateSpin() {
+            const btn = document.getElementById('btn-generate');
+            const actives =[
+                document.getElementById('slot-1-active'),
+                document.getElementById('slot-2-active'),
+                document.getElementById('slot-3-active')
+            ];
+
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> 搭配生成中...';
+            btn.classList.add('opacity-75', 'pointer-events-none');
+
+            let count = 0;
+            const interval = setInterval(() => {
+                actives[0].innerText = tops[Math.floor(Math.random() * tops.length)];
+                actives[1].innerText = bottoms[Math.floor(Math.random() * bottoms.length)];
+                actives[2].innerText = shoes[Math.floor(Math.random() * shoes.length)];
+                count++;
+                if (count > 12) {
+                    clearInterval(interval);
+                    btn.innerHTML = '✨ 完美穿搭！再试一次';
+                    btn.classList.remove('opacity-75', 'pointer-events-none');
+                }
+            }, 80);
+        }
+    </script>
+</body>
+
+</html>
